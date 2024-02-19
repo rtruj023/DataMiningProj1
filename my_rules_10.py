@@ -52,3 +52,45 @@ for item in items:
         frequent_items[1] += [item]
 
 print(frequent_items.get(1))
+
+#Functions for generating output files
+
+#A user defined function that generates a file of the frequent itemsets
+# and their respective support counts
+def make_items_file(dictionary, file_name):
+    with open(file_name, 'w') as f:
+        f.write("ITEMSETS|SUPPORT_COUNT")
+        for itemset in dictionary:
+            itemset_str = " ".join(str(item) for item in itemset)
+            sCount = support_counts[itemset]
+            f.write(itemset_str + "|" + sCount + "\n")
+
+#A user defined function that generates a file of the high-confidence frequent rules
+def make_rules_file(dictionary, file_name):
+    with open(file_name, "w") as f:
+        f.write("LHS|RHS|SUPPORT_COUNT|CONFIDENCE")
+        for rule in dictionary:
+            lhs = " ".join(str(item) for item in rule['LH'])
+            rhs = " ".join(str(item) for item in rule['RH'])
+            sCount = rule['Support Count']
+            confidence = rule['Confidence']
+            f.write(lhs + "|" + rhs + "|" + sCount + "|" + confidence + "\n")
+
+#A user defined function that generates a file which includes all information pertinent to this
+#association rule mining program
+def make_info_file(minsuppc,minconf, output_name,input_file,output_file_name):
+    with open(output_file_name, "w") as f:
+        f.write("minsuppc: " + minsuppc + "\n")
+        f.write("minconf: " + minconf + "\n")
+        f.write("input file: " + input_file + "\n")
+        f.write("output name: " + output_name + "\n")
+
+#Generating example files
+
+make_items_file(frequent_items,"example_items.txt")
+make_rules_file(rules,"example_rules.txt")
+make_info_file(min_supp, min_conf, file_name,out_file_name, "example_info.txt")
+
+
+
+

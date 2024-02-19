@@ -48,7 +48,7 @@ candidate_items[1] = [[item] for item in items]
 
 #Generate F1(frequent 1-itemsets)
 for item in items:
-    if support_counts[item] >= min_suppc:
+    if support_counts[item] >= min_supp:
         frequent_items[1] += [item]
 
 print(frequent_items.get(1))

@@ -38,10 +38,59 @@ for line in input_file.readlines():
         transactions[trans_id].append(item)
     if item not in items:
         items.append(item)
-        support_counts[item] = 1
+        support_counts[str(item)] = 1
     else:
-        support_counts[item] = support_counts[item] + 1
+        support_counts[str(item)] = support_counts[str(item)] + 1
     last_id = trans_id
 
 #Setting the length 1 itemsets, as lists of one element
 candidate_items[1] = [[item] for item in items]
+
+frequent_items[1] = []
+#Generate F1(frequent 1-itemsets)
+for item in items:
+    if support_counts[str(item)] >= min_supp:
+        frequent_items[1].append([item])
+
+print(frequent_items.get(1))
+
+#Functions for generating output files
+
+#A user defined function that generates a file of the frequent itemsets
+# and their respective support counts
+def make_items_file(dictionary, file_name):
+    with open(file_name, 'w') as f:
+        f.write("ITEMSETS|SUPPORT_COUNT\n")
+        for key in dictionary:
+            for itemset in dictionary[key]:
+                itemset_str = " ".join(str(item) for item in itemset)
+                itemset.sort()
+                sCount = support_counts["|".join([str(x) for x in itemset])]
+                f.write(itemset_str + "|" + str(sCount) + "\n")
+
+#A user defined function that generates a file of the high-confidence frequent rules
+def make_rules_file(dictionary, file_name):
+    with open(file_name, "w") as f:
+        f.write("LHS|RHS|SUPPORT_COUNT|CONFIDENCE\n")
+        for rule in dictionary:
+            lhs = " ".join(str(item) for item in rule['LH'])
+            rhs = " ".join(str(item) for item in rule['RH'])
+            sCount = rule['Support Count']
+            confidence = rule['Confidence']
+            f.write(lhs + "|" + rhs + "|" + sCount + "|" + confidence + "\n")
+
+#A user defined function that generates a file which includes all information pertinent to this
+#association rule mining program
+def make_info_file(minsuppc,minconf, output_name,input_file,output_file_name):
+    with open(output_file_name, "w") as f:
+        f.write("minsuppc: " + str(minsuppc) + "\n")
+        f.write("minconf: " + str(minconf) + "\n")
+        f.write("input file: " + str(input_file) + "\n")
+        f.write("output name: " + str(output_name) + "\n")
+
+#Generating example files
+
+make_items_file(frequent_items, out_file_name +"_items_10.txt")
+make_rules_file(rules, out_file_name + "_rules_10.txt")
+make_info_file(min_supp, min_conf, file_name,out_file_name, out_file_name + "_info_10.txt")
+

@@ -1,0 +1,4 @@
+minsuppc: 70
+minconf: 0.84
+input file: out.txt
+output name: small.txt

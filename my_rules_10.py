@@ -26,6 +26,8 @@ rules = []
 input_file = open(file_name)
 
 #Section 1 reading inputs and setting up variables
+
+#Section 1 reading inputs and setting up variables
 last_id = -1
 for line in input_file.readlines():
     trans_id = int(line.split(" ")[0])
@@ -45,7 +47,6 @@ for line in input_file.readlines():
 
 #Setting the length 1 itemsets, as lists of one element
 candidate_items[1] = [[item] for item in items]
-
 frequent_items[1] = []
 #Generate F1(frequent 1-itemsets)
 for item in items:
@@ -53,6 +54,38 @@ for item in items:
         frequent_items[1].append([item])
 
 print(frequent_items.get(1))
+
+item_length = 2
+while len(frequent_items[item_length - 1]) > 0:
+    frequent_items[item_length] = []
+    candidate_items = []
+    #Pruning
+    for first_index, first_itemset in enumerate(frequent_items[item_length - 1]):
+        for second_index, second_itemset in enumerate(frequent_items[item_length - 1][first_index + 1:]):
+            if first_itemset[0:item_length - 2] == second_itemset[0:item_length - 2]:
+                candidate = list(list(itertools.combinations(first_itemset + [second_itemset[-1]], item_length))[0])
+                is_pruned = False
+                for combo in itertools.combinations(first_itemset + [second_itemset[-1]], item_length - 1):
+                    if list(combo) not in frequent_items[item_length - 1]:
+                        is_pruned = True
+                        break
+                if not is_pruned:
+                    candidate_items.append(candidate)
+    #Eliminating
+    for candidate in candidate_items:
+        count = 0
+        for key in transactions:
+            not_found = False
+            for item in candidate:
+                if item not in transactions[key]:
+                    not_found = True
+                    break
+            if not_found == False:
+                count += 1
+        if count > min_supp:
+            frequent_items[item_length].append(candidate)
+    item_length += 1
+
 
 #Functions for generating output files
 

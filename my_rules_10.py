@@ -1,4 +1,7 @@
 import sys
+import itertools
+import matplotlib
+from functools import reduce
 
 #A Dictionary with the transaction Ids, not ordered since it doesn't matter
 transactions = {}

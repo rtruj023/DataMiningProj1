@@ -1,7 +1,7 @@
 import sys
 import itertools
-import matplotlib
-from functools import reduce
+import matplotlib.pyplot as plt
+
 
 #A Dictionary with the transaction Ids, not ordered since it doesn't matter
 transactions = {}
@@ -87,7 +87,15 @@ while len(frequent_items[item_length - 1]) > 0:
                 count += 1
         if count > min_supp:
             frequent_items[item_length].append(candidate)
+            itemset_str = "|".join(str(item) for item in candidate)
+            support_counts[itemset_str] = count
     item_length += 1
+
+#Generating High Confidence Rules
+
+
+
+
 
 
 #Functions for generating output files
@@ -117,7 +125,7 @@ def make_rules_file(dictionary, file_name):
 
 #A user defined function that generates a file which includes all information pertinent to this
 #association rule mining program
-def make_info_file(minsuppc,minconf, output_name,input_file,output_file_name):
+def make_info_file(minsuppc,minconf, input_file, output_name, output_file_name):
     with open(output_file_name, "w") as f:
         f.write("minsuppc: " + str(minsuppc) + "\n")
         f.write("minconf: " + str(minconf) + "\n")

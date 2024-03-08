@@ -47,7 +47,7 @@ for line in input_file.readlines():
     else:
         support_counts[str(item)] = support_counts[str(item)] + 1
     last_id = trans_id
-
+itemsCount = len(items)
 #Setting the length 1 itemsets, as lists of one element
 candidate_items[1] = [[item] for item in items]
 frequent_items[1] = []
@@ -56,7 +56,7 @@ for item in items:
     if support_counts[str(item)] >= min_supp:
         frequent_items[1].append([item])
 
-print(frequent_items.get(1))
+#print(frequent_items.get(1))
 
 item_length = 2
 while len(frequent_items[item_length - 1]) > 0:
@@ -74,6 +74,7 @@ while len(frequent_items[item_length - 1]) > 0:
                         break
                 if not is_pruned:
                     candidate_items.append(candidate)
+    #print(candidate_items)
     #Eliminating
     for candidate in candidate_items:
         count = 0
@@ -85,17 +86,46 @@ while len(frequent_items[item_length - 1]) > 0:
                     break
             if not_found == False:
                 count += 1
+
         if count > min_supp:
             frequent_items[item_length].append(candidate)
             itemset_str = "|".join(str(item) for item in candidate)
             support_counts[itemset_str] = count
+
     item_length += 1
 
+
 #Generating High Confidence Rules
+for key in frequent_items:
+    print("KEYS " + str(frequent_items.keys()))
+    if key > 1:
+        rule_itemsets = frequent_items[key]
+        #print("Rule " + str(rule_itemsets))
+        print("Key " + str(key))
+        for items in rule_itemsets:
+            for i in range(1,len(items)):
+                for combination in itertools.combinations(items, i):
+                    lhs = combination
+                    #print("combp " + str(items))
+                    #print("i " + str(i))
+                    #print(list(combination))
+                    #temp = sorted(lhs)
+                    #lhs = tuple(temp)
+                    rhs = []
+                    for x in items:
+                        if x not in lhs:
+                            rhs.append(x)
+                    #print("LHS " + str(lhs))
+                    #print("RHS " + str(rhs))
+                    #rhs = [item for item in items if item not in lhs]
+                    support_union = support_counts["|".join(str(item) for item in items)]
+                    support_lhs = support_counts["|".join(str(item) for item in lhs)]
+                    confidence = support_union / support_lhs
+                    if confidence >= min_conf:
+                        rules.append({'LH': lhs, 'RH': rhs, 'Support Count': support_counts["|".join(str(item) for item in items)], 'Confidence': confidence})
 
 
-
-
+#print(rules)
 
 
 #Functions for generating output files
@@ -114,14 +144,16 @@ def make_items_file(dictionary, file_name):
 
 #A user defined function that generates a file of the high-confidence frequent rules
 def make_rules_file(dictionary, file_name):
+    if min_conf == -1:
+        return
     with open(file_name, "w") as f:
         f.write("LHS|RHS|SUPPORT_COUNT|CONFIDENCE\n")
         for rule in dictionary:
             lhs = " ".join(str(item) for item in rule['LH'])
             rhs = " ".join(str(item) for item in rule['RH'])
             sCount = rule['Support Count']
-            confidence = rule['Confidence']
-            f.write(lhs + "|" + rhs + "|" + sCount + "|" + confidence + "\n")
+            confidence = "{:.2f}".format(rule['Confidence'])
+            f.write(lhs + "|" + rhs + "|" + str(sCount) + "|" + confidence + "\n")
 
 #A user defined function that generates a file which includes all information pertinent to this
 #association rule mining program
@@ -131,8 +163,12 @@ def make_info_file(minsuppc,minconf, input_file, output_name, output_file_name):
         f.write("minconf: " + str(minconf) + "\n")
         f.write("input file: " + str(input_file) + "\n")
         f.write("output name: " + str(output_name) + "\n")
+        f.write("Number of items: " + str(itemsCount) + "\n")
+        f.write("Number of transactions: " + str(len(transactions)) + "\n")
+        #f.write("Length of the longest transaction " + str())
 
 #Generating example files
+
 
 make_items_file(frequent_items, out_file_name +"_items_10.txt")
 make_rules_file(rules, out_file_name + "_rules_10.txt")

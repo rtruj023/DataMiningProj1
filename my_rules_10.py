@@ -1,6 +1,7 @@
 import sys
 import itertools
 import matplotlib.pyplot as plt
+import time
 
 
 #A Dictionary with the transaction Ids, not ordered since it doesn't matter
@@ -51,12 +52,14 @@ itemsCount = len(items)
 #Setting the length 1 itemsets, as lists of one element
 candidate_items[1] = [[item] for item in items]
 frequent_items[1] = []
+
+start_time = time.time()
 #Generate F1(frequent 1-itemsets)
 for item in items:
     if support_counts[str(item)] >= min_supp:
         frequent_items[1].append([item])
 
-#print(frequent_items.get(1))
+
 
 item_length = 2
 while len(frequent_items[item_length - 1]) > 0:
@@ -74,7 +77,7 @@ while len(frequent_items[item_length - 1]) > 0:
                         break
                 if not is_pruned:
                     candidate_items.append(candidate)
-    #print(candidate_items)
+
     #Eliminating
     for candidate in candidate_items:
         count = 0
@@ -94,47 +97,58 @@ while len(frequent_items[item_length - 1]) > 0:
 
     item_length += 1
 
+end_time = time.time()
+frequent_itemset_time = end_time - start_time
 
+start_time = time.time()
 #Generating High Confidence Rules
 for key in frequent_items:
-    print("KEYS " + str(frequent_items.keys()))
     if key > 1:
         rule_itemsets = frequent_items[key]
-        #print("Rule " + str(rule_itemsets))
-        print("Key " + str(key))
         for items in rule_itemsets:
             for i in range(1,len(items)):
                 for combination in itertools.combinations(items, i):
                     lhs = combination
-                    #print("combp " + str(items))
-                    #print("i " + str(i))
-                    #print(list(combination))
-                    #temp = sorted(lhs)
-                    #lhs = tuple(temp)
                     rhs = []
                     for x in items:
                         if x not in lhs:
                             rhs.append(x)
-                    #print("LHS " + str(lhs))
-                    #print("RHS " + str(rhs))
-                    #rhs = [item for item in items if item not in lhs]
                     support_union = support_counts["|".join(str(item) for item in items)]
                     support_lhs = support_counts["|".join(str(item) for item in lhs)]
                     confidence = support_union / support_lhs
                     if confidence >= min_conf:
                         rules.append({'LH': lhs, 'RH': rhs, 'Support Count': support_counts["|".join(str(item) for item in items)], 'Confidence': confidence})
 
+end_time = time.time()
+candidate_rules_time = end_time - start_time
 
-#print(rules)
+#Generating information/statistics for info file
+trans_len = 0
+for item in transactions:
+    current_trans = len(transactions[item])
+    if current_trans > trans_len:
+        trans_len = current_trans
+
+itemset_len = 0
+for k in frequent_items:
+    if k > itemset_len:
+        itemset_len = k
+
+highest_rule = None
+highest_conf = 0.00
+for item in rules:
+    if item['Confidence'] > highest_conf:
+        highest_conf = item['Confidence']
+        highest_rule = item
 
 
 #Functions for generating output files
+
 
 #A user defined function that generates a file of the frequent itemsets
 # and their respective support counts
 def make_items_file(dictionary, file_name):
     with open(file_name, 'w') as f:
-        f.write("ITEMSETS|SUPPORT_COUNT\n")
         for key in dictionary:
             for itemset in dictionary[key]:
                 itemset_str = " ".join(str(item) for item in itemset)
@@ -147,7 +161,6 @@ def make_rules_file(dictionary, file_name):
     if min_conf == -1:
         return
     with open(file_name, "w") as f:
-        f.write("LHS|RHS|SUPPORT_COUNT|CONFIDENCE\n")
         for rule in dictionary:
             lhs = " ".join(str(item) for item in rule['LH'])
             rhs = " ".join(str(item) for item in rule['RH'])
@@ -165,10 +178,28 @@ def make_info_file(minsuppc,minconf, input_file, output_name, output_file_name):
         f.write("output name: " + str(output_name) + "\n")
         f.write("Number of items: " + str(itemsCount) + "\n")
         f.write("Number of transactions: " + str(len(transactions)) + "\n")
-        #f.write("Length of the longest transaction " + str())
+        f.write("Length of the longest transaction: " + str(trans_len) + "\n")
+        f.write("Length of the largest k-itemset: " + str(itemset_len-1) + "\n")
 
-#Generating example files
+        total_num_itemsets = 0
+        for k in frequent_items:
+            if(k == 4):
+                break
+            current_num = len(frequent_items[k])
+            total_num_itemsets += len(frequent_items[k])
+            f.write("Number of frequent " + str(k) + "-itemsets: " + str(current_num) + "\n")
+        f.write("Total number of frequent itemsets: " + str(total_num_itemsets) + "\n")
+        f.write("Number of high confidence rules: " + str(len(rules)) + "\n")
 
+        lhs = " ".join(str(item) for item in highest_rule['LH'])
+        rhs = " ".join(str(item) for item in highest_rule['RH'])
+        sCount = highest_rule['Support Count']
+        confidence = "{:.2f}".format(highest_rule['Confidence'])
+        f.write("The rule with the highest confidence: " + lhs + '|' + rhs + '|' + str(sCount) + '|' + confidence + "\n")
+        f.write("Time in seconds to find the frequent itemsets: " + str(frequent_itemset_time) + "\n")
+        f.write("Time in seconds to find the confident rules: " + str(candidate_rules_time))
+
+#Generating files
 
 make_items_file(frequent_items, out_file_name +"_items_10.txt")
 make_rules_file(rules, out_file_name + "_rules_10.txt")

@@ -142,6 +142,7 @@ for item in rules:
         highest_rule = item
 
 
+
 #Functions for generating output files
 
 
@@ -191,11 +192,14 @@ def make_info_file(minsuppc,minconf, input_file, output_name, output_file_name):
         f.write("Total number of frequent itemsets: " + str(total_num_itemsets) + "\n")
         f.write("Number of high confidence rules: " + str(len(rules)) + "\n")
 
-        lhs = " ".join(str(item) for item in highest_rule['LH'])
-        rhs = " ".join(str(item) for item in highest_rule['RH'])
-        sCount = highest_rule['Support Count']
-        confidence = "{:.2f}".format(highest_rule['Confidence'])
-        f.write("The rule with the highest confidence: " + lhs + '|' + rhs + '|' + str(sCount) + '|' + confidence + "\n")
+        if(highest_rule != None):
+            lhs = " ".join(str(item) for item in highest_rule['LH'])
+            rhs = " ".join(str(item) for item in highest_rule['RH'])
+            sCount = highest_rule['Support Count']
+            confidence = "{:.2f}".format(highest_rule['Confidence'])
+            f.write("The rule with the highest confidence: " + lhs + '|' + rhs + '|' + str(sCount) + '|' + confidence + "\n")
+        else:
+            f.write("The rule with the highest confidence: " + "\n")
         f.write("Time in seconds to find the frequent itemsets: " + str(frequent_itemset_time) + "\n")
         f.write("Time in seconds to find the confident rules: " + str(candidate_rules_time))
 

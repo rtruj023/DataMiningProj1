@@ -203,6 +203,19 @@ def make_info_file(minsuppc,minconf, input_file, output_name, output_file_name):
         f.write("Time in seconds to find the frequent itemsets: " + str(frequent_itemset_time) + "\n")
         f.write("Time in seconds to find the confident rules: " + str(candidate_rules_time))
 
+#Bar Graph for the amount of time required to find the frequent itemsets and candidate rules
+
+fig, ax = plt.subplots()
+
+processes = ['Frequent Itemsets', 'Candidate Rules']
+time_required = [frequent_itemset_time, candidate_rules_time]
+bar_colors = ['tab:red', 'tab:blue']
+
+time_graph = ax.bar(processes, time_required, label=processes, color=bar_colors)
+ax.bar_label(time_graph,fmt='%.2f')
+ax.set_ylabel('Time required (seconds)')
+ax.set_title('Graph displaying time required for each process')
+
 #Generating files
 
 make_items_file(frequent_items, out_file_name +"_items_10.txt")

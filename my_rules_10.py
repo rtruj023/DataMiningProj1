@@ -90,7 +90,7 @@ while len(frequent_items[item_length - 1]) > 0:
             if not_found == False:
                 count += 1
 
-        if count > min_supp:
+        if count >= min_supp:
             frequent_items[item_length].append(candidate)
             itemset_str = "|".join(str(item) for item in candidate)
             support_counts[itemset_str] = count
@@ -108,7 +108,7 @@ for key in frequent_items:
         for items in rule_itemsets:
             for i in range(1,len(items)):
                 for combination in itertools.combinations(items, i):
-                    lhs = combination
+                    lhs = list(combination)
                     rhs = []
                     for x in items:
                         if x not in lhs:
@@ -131,6 +131,8 @@ for item in transactions:
 
 itemset_len = 0
 for k in frequent_items:
+    if len(frequent_items[k]) == 0:
+        break
     if k > itemset_len:
         itemset_len = k
 
@@ -180,11 +182,11 @@ def make_info_file(minsuppc,minconf, input_file, output_name, output_file_name):
         f.write("Number of items: " + str(itemsCount) + "\n")
         f.write("Number of transactions: " + str(len(transactions)) + "\n")
         f.write("Length of the longest transaction: " + str(trans_len) + "\n")
-        f.write("Length of the largest k-itemset: " + str(itemset_len-1) + "\n")
+        f.write("Length of the largest k-itemset: " + str(itemset_len) + "\n")
 
         total_num_itemsets = 0
         for k in frequent_items:
-            if(k == 4):
+            if len(frequent_items[k]) == 0:
                 break
             current_num = len(frequent_items[k])
             total_num_itemsets += len(frequent_items[k])
